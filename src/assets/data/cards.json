@@ -1,0 +1,127 @@
+{
+    "bronze": [
+      {
+        "id": 1,
+        "title": "Damascus Steel",
+        "image_file": "damascus_steel.png",
+        "description": "A legendary metal for swords and blades",
+        "personality": "",
+        "tier": "bronze",
+        "notes": ""
+      },     
+      {
+        "id": 2,
+        "title": "Wudhu",
+        "image_file": "wudhu.png",
+        "description": "Wudhu",
+        "personality": "",
+        "tier": "bronze",
+        "notes": ""
+      },     
+      {
+        "id": 3,
+        "title": "Ink And Pen",
+        "image_file": "ink_and_pen.png",
+        "description": "Ink And Pen",
+        "personality": "",
+        "tier": "bronze",
+        "notes": ""
+      },     
+      {
+        "id": 4,
+        "title": "Dinar",
+        "image_file": "dinar.png",
+        "description": "Dinar",
+        "personality": "",
+        "tier": "bronze",
+        "notes": ""
+      }
+    ],
+    "silver": [
+      {
+        "id": 5,
+        "title": "Sundial",
+        "image_file": "sundial.png",
+        "description": "Sundial",
+        "personality": "Ibn Yunus",
+        "tier": "silver",
+        "notes": ""
+      },
+      {
+        "id": 6,
+        "title": "Moorish Arch",
+        "image_file": "moorish_arch.png",
+        "description": "Moorish Arch",
+        "personality": "",
+        "tier": "silver",
+        "notes": ""
+      },
+      {
+        "id": 7,
+        "title": "Moorish Minar",
+        "image_file": "moorish_minar.png",
+        "description": "Moorish Minar",
+        "personality": "",
+        "tier": "silver",
+        "notes": ""
+      }
+    ],
+    "gold": [
+      {
+        "id": 8,
+        "title": "Algorithm",
+        "image_file": "algorithm.png",
+        "description": "Algorithm",
+        "personality": "Al-Khwarizmi",
+        "tier": "gold",
+        "notes": ""
+      },
+      {
+        "id": 9,
+        "title": "Algebra",
+        "image_file": "algebra.png",
+        "description": "Algebra",
+        "personality": "Al-Khwarizmi",
+        "tier": "gold",
+        "notes": ""
+      },
+      {
+        "id": 10,
+        "title": "Precise Measurement",
+        "image_file": "precise_measurement.png",
+        "description": "Al-Qiyās al-Daqiq - Precise measurement",
+        "personality": "Al-Biruni",
+        "tier": "gold",
+        "notes": ""
+      }
+    ],
+    "sapphire": [
+      {
+        "id": 11,
+        "title": "Cave of Hira",
+        "image_file": "cave_of_hira.png",
+        "description": "Where the Prophet (PBUH) received his first revelation",
+        "personality": "",
+        "tier": "sapphire",
+        "notes": ""
+      },
+      {
+        "id": 12,
+        "title": "Al Qalam",
+        "image_file": "al_qalam.png",
+        "description": "Al Qalam",
+        "personality": "",
+        "tier": "sapphire",
+        "notes": ""
+      },
+      {
+        "id": 13,
+        "title": "Date and Water",
+        "image_file": "date_and_water.png",
+        "description": "Date and Water",
+        "personality": "",
+        "tier": "sapphire",
+        "notes": ""
+      }
+    ]
+  }
