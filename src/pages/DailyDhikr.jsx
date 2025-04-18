@@ -1,18 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { Separator, Box, Text, Button, Flex, Card, For, CheckboxCard, Tabs, Checkbox, Stack, HStack, VStack } from '@chakra-ui/react'
+import { Separator, Box, Text, Button, Flex, Card, For, CheckboxCard, Tabs, Checkbox, Stack, HStack, VStack, Link } from '@chakra-ui/react'
 import benefitsData from "../assets/data/benefits_of_dhikr.json";
 import { auth, db } from '../firebase';
 import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, increment, collection, deleteField } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom'
 import adhkarData from "../assets/data/adhkar.json"
 import { LuChevronDown, LuChevronUp } from "react-icons/lu";
-import { RiFireFill } from "react-icons/ri";
+import { RiFireFill, RiHeartPulseFill } from "react-icons/ri";
+import { FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { GiTwoCoins } from "react-icons/gi";
 import { Toaster, toaster } from "../components/ui/toaster"
 import TopBar from "../components/TopBar"
 
 let randomIndex = Math.floor(Math.random() * benefitsData.benefits_of_dhikr.length);
 let dailyAdhkarIdArray = []
+
+import { useSound } from 'use-sound';
+import { useHaptic } from "use-haptic";
+import coinSound from "../assets/audio/knock.mp3"
+
 
 const DailyDhikr = () => {
     const [benefitsCardExpanded, setBenefitsCardExpanded] = useState(true)
@@ -27,6 +33,10 @@ const DailyDhikr = () => {
 
     const navigate = useNavigate();
     const user = auth.currentUser;
+
+    const [isSoundOn, setIsSoundOn] = useState(true);
+    const [play, { stop }] = useSound(coinSound);
+    const { triggerHaptic } = useHaptic();
 
     useEffect(() => {
         async function fetchData() {
@@ -110,7 +120,24 @@ const DailyDhikr = () => {
         setBenefitsCardExpanded(!benefitsCardExpanded);
     };
 
+
+    const handlePlay = () => {
+        if (isSoundOn) {
+            play();
+            triggerHaptic();
+        }
+    };
+
+    const toggleSound = () => {
+        setIsSoundOn(!isSoundOn);
+        if (isSoundOn) {
+            stop();
+        }
+    };
+
     const handleComplete = (key) => {
+        handlePlay();        
+
         if (user) {
             const adhkarRef = doc(db, "daily_adhkar", user.uid);
             const userRef = doc(db, "users", user.uid)
@@ -214,9 +241,9 @@ const DailyDhikr = () => {
 
     return (
         <Box display={"flex"} justifyContent={"center"} width={"100%"} overflowY={"scroll"} maxHeight={"70vh"} paddingBottom={"60px"}>
-            <Toaster />         
+            <Toaster />
             <VStack>
-            <TopBar/>
+                <TopBar />
                 <HStack width={"100%"} marginTop={4} display={"flex"} justifyContent={"flex-end"}>
                     <HStack><GiTwoCoins />
                         <Text>{coins}</Text>
@@ -252,23 +279,46 @@ const DailyDhikr = () => {
                 </Card.Root>
 
                 <Box width={"80%"} display="flex" justifyContent={"flex-end"} position={"absolute"} bottom={"100px"} zindex={4}>
-                    <Button
-                        boxShadow='0px 12px 0px 0px #cfaf06' // 3D shadow
-                        fontWeight='bold'
 
-                        _active={{
-                            backgroundColor: 'white',
-                            boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff',
-                            transform: 'translateY(4px)' //Keeps the button visually pressed down on click
-                        }}
+                    <VStack>
+                        <HStack width="100%" display="flex" alignItems="flex-end" justifyContent="space-between">                           
 
-                        _hover={{ backgroundColor: 'white', boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff' }}
+                            <HStack >
+                                <RiHeartPulseFill size="20px" />
+                                <Text fontSize={"16px"}>{dailyAdhkarIdArray.length} left</Text>
+                            </HStack>
 
-                        backgroundColor="gold" width={"140px"} height={"100px"} onClick={() => handleComplete(dailyAdhkarIdArray[0])}>
-                        <VStack>
-                            <HStack marginTop={2}><GiTwoCoins /> <Text fontSize={"20px"}>{Number(dailyAdhkar[dailyAdhkarIdArray[0]].transliteration.length)}</Text></HStack>
-                        </VStack>
-                    </Button>
+                            <Link onClick={toggleSound}>
+                                {isSoundOn ? <FaVolumeUp size="24px" /> :  <FaVolumeMute size="24px" /> }
+                            </Link>
+                        </HStack>
+
+
+                        <Button
+                            boxShadow='0px 12px 0px 0px #cfaf06' // 3D shadow
+                            fontWeight='bold'
+
+                            _active={{
+                                backgroundColor: 'white',
+                                boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff',
+                                transform: 'translateY(4px)' //Keeps the button visually pressed down on click
+                            }}
+
+                            _hover={{ backgroundColor: 'white', boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff' }}
+
+                            backgroundColor="gold" width={"140px"} height={"100px"}
+
+                            onClick={() => handleComplete(dailyAdhkarIdArray[0])}>
+
+                            <VStack>
+                                <Text fontSize={"54px"}>+</Text>
+                                <HStack marginTop={2}>
+                                    <GiTwoCoins />
+                                    <Text fontSize={"20px"}>{Number(dailyAdhkar[dailyAdhkarIdArray[0]].transliteration.length)}</Text>
+                                </HStack>
+                            </VStack>
+                        </Button>
+                    </VStack>
                 </Box>
             </VStack>
 

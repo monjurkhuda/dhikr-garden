@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import React from 'react';
-import { VStack, Box, Text, HStack, Image, Dialog, Button } from '@chakra-ui/react'
-import { Toaster } from "../components/ui/toaster"
+import { VStack, Box, Text, HStack, Image, Dialog, Button, CloseButton } from '@chakra-ui/react'
+import { Toaster, toaster } from "../components/ui/toaster"
 import { auth, db } from '../firebase';
-import { doc, setDoc, getDoc, updateDoc, increment, arrayUnion } from "firebase/firestore";
+import { doc, getDoc, updateDoc, increment, arrayUnion } from "firebase/firestore";
 import cardsData from "../assets/data/cards.json"
 import { GiTwoCoins } from "react-icons/gi";
 import TopBar from "../components/TopBar"
@@ -16,7 +16,6 @@ const Cards = () => {
     const [showCard, setShowCard] = useState(false);
     const [selectedShowCard, setSelectedShowCard] = useState({});
     const [coins, setCoins] = useState(0);
-    const [inadequateCoins, setInadequateCoins] = useState(false);
     const [countdown, setCountdown] = useState(3);
     const [wonCard, setWonCard] = useState({});
     const [cardTier, setCardTier] = useState("");
@@ -169,7 +168,11 @@ const Cards = () => {
         }
 
         if (userinfo.coins < coinreq) {
-            setInadequateCoins(true)
+            toaster.create({
+                description: "Not enough coins",
+                type: "error",
+                duration: 1000,
+            })
             return
         }
 
@@ -227,7 +230,8 @@ const Cards = () => {
 
     return (
         <VStack>
-            <TopBar/>
+            <TopBar />
+            <Toaster/>
             <HStack maxWidth={"340px"} maxHeight={"60vh"} overflow="auto" wrap={"wrap"}>
                 {userCards && !countdownInProgress && Object.keys(userCards).map(tier =>
                     userCards[tier].map(card =>
@@ -266,8 +270,8 @@ const Cards = () => {
                     <Box display={'flex'} flexDirection={'column'} alignItems={'center'} padding={"20px"}>
                         <Image style={{ position: 'absolute', top: '40px' }} src={`./images/${selectedShowCard.image_file}`} alt={`./images/${selectedShowCard.image_file}`} width={200} />
                         <Image style={{ position: 'relative' }} src={`./images/${selectedShowCard.tier}_CardBase.png`} alt={`${selectedShowCard.tier}_CardBase`} width={260} />
-                        <Text style={{ position: 'absolute', top: '238px', fontSize: '18px', color: 'white', fontWeight: '600', letterSpacing: '1px' }} >{selectedShowCard.title}</Text>
-                        <Text style={{ position: 'absolute', top: '286px', fontSize: '12px', color: 'black', maxWidth: '180px', fontWeight: 'bold' }}>{selectedShowCard.description}</Text>
+                        <Text style={{ position: 'absolute', top: '242px', fontSize: '16px', color: 'white', fontWeight: '600' }} >{selectedShowCard.title}</Text>
+                        <Text style={{ position: 'absolute', top: '286px', fontSize: '10px', color: 'black', maxWidth: '180px' }}>{selectedShowCard.description}</Text>
                     </Box>
                 </Box>
             }
@@ -282,69 +286,72 @@ const Cards = () => {
 
                 </HStack>
                 <Text>Buy Pack:</Text>
-            
 
-            <HStack wrap={"wrap"} gap={"20px"}>
-                {tierArray.map((tier) => (
-                    <Dialog.Root size="cover" placement="center" motionPreset="slide-in-bottom">
-                        <Dialog.Trigger asChild>
-                            <Button
-                                boxShadow={
-                                    tier == "bronze" ? "0px 10px 0px 0px #995c22" : tier == "silver" ?
-                                        "0px 10px 0px 0px #8f8b8b" : tier == "gold" ? "0px 10px 0px 0px #c7a800" : "0px 10px 0px 0px #07528f"
-                                }
-                                size="md"
-                                backgroundColor={tier == "bronze" ? "#CE8946" : tier == "silver" ?
-                                    "silver" : tier == "gold" ? "gold" : "#0c68b2"}
-                                _hover={{
-                                    backgroundColor: 'white',
-                                    boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff',
-                                    transform: 'translateY(4px)'
-                                }}
-                                _active={{
-                                    backgroundColor: 'white',
-                                    boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff',
-                                    transform: 'translateY(4px)'
-                                }}
 
-                                onClick={() => {
-                                    buyPack(tier);
-                                }}>
-                                <Text fontSize={"12px"} color="black"
-                                >{tier == "bronze" ? "Bronze" : tier == "silver" ?
-                                    "Silver" : tier == "gold" ? "Gold" : "Sapphire"} {tier == "bronze" ? "1K" : tier == "silver" ?
-                                        "5K" : tier == "gold" ? "20K" : "100K"}
-                                </Text>
-                            </Button>
-                        </Dialog.Trigger>
+                <HStack wrap={"wrap"} gap={"20px"}>
+                    {tierArray.map((tier) => (
+                        <Dialog.Root size="cover" placement="center" motionPreset="slide-in-bottom">
+                            <Dialog.Trigger disabled={coins < 1000} asChild>
+                                <Button
+                                    boxShadow={
+                                        tier == "bronze" ? "0px 10px 0px 0px #995c22" : tier == "silver" ?
+                                            "0px 10px 0px 0px #8f8b8b" : tier == "gold" ? "0px 10px 0px 0px #c7a800" : "0px 10px 0px 0px #07528f"
+                                    }
+                                    size="md"
+                                    backgroundColor={tier == "bronze" ? "#CE8946" : tier == "silver" ?
+                                        "silver" : tier == "gold" ? "gold" : "#0c68b2"}
+                                    _hover={{
+                                        backgroundColor: 'white',
+                                        boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff',
+                                        transform: 'translateY(4px)'
+                                    }}
+                                    _active={{
+                                        backgroundColor: 'white',
+                                        boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff',
+                                        transform: 'translateY(4px)'
+                                    }}
 
-                        <Dialog.Positioner>
-                            <Dialog.Content backgroundColor={"#e5ce9b"}>
-                                {inadequateCoins ? (
-                                    <Text fontSize="24px">You don't have enough coins</Text>
-                                ) : countdownInProgress && countdown > 0 ? (
-                                    <Box width={"100%"} height={"100%"} display={"flex"} alignItems={"center"} justifyContent={"center"} >
-                                        <Text fontSize={'200px'}>{countdown}</Text>
-                                    </Box>
-                                ) : (
-                                    <Dialog.Body>
-                                        <Box onClick={() => setShowCard(!showCard)} display="flex" justifyContent={"center"}>
-                                            <Image style={{ position: 'absolute', top: '40px' }} src={`./images/${wonCard.image_file}`} alt={`./images/${wonCard.image_file}`} width={200} />
-                                            <Image style={{ position: 'absolute', top: '20px' }} src={`./images/${wonCard.tier}_CardBase.png`} alt={`${wonCard.tier}_CardBase`} width={260} />
-                                            <Text style={{ position: 'absolute', top: '238px', fontSize: '18px', color: 'white', fontWeight: '600', letterSpacing: '1px' }} >{wonCard.title}</Text>
-                                            <Text style={{ position: 'absolute', top: '286px', fontSize: '12px', color: 'black', maxWidth: '180px', fontWeight: 'bold' }}>{wonCard.description}</Text>
+                                    onClick={() => {
+                                        buyPack(tier);
+                                    }}>
+                                    <Text fontSize={"12px"} color="black"
+                                    >{tier == "bronze" ? "Bronze" : tier == "silver" ?
+                                        "Silver" : tier == "gold" ? "Gold" : "Sapphire"} {tier == "bronze" ? "1K" : tier == "silver" ?
+                                            "5K" : tier == "gold" ? "20K" : "100K"}
+                                    </Text>
+                                </Button>
+                            </Dialog.Trigger>
+
+                            <Dialog.Positioner>
+                                <Dialog.Content backgroundColor={"#e5ce9b"}>
+                                    
+                                    <Dialog.CloseTrigger top="-6" insetEnd="-6" asChild>
+                                        <CloseButton bg="red" size="xl" />
+                                    </Dialog.CloseTrigger>
+
+                                    {countdownInProgress && countdown > 0 ? (
+                                        <Box width={"100%"} height={"100%"} display={"flex"} alignItems={"center"} justifyContent={"center"} >
+                                            <Text fontSize={'200px'}>{countdown}</Text>
                                         </Box>
-                                    </Dialog.Body>
-                                )}
-                            </Dialog.Content>
-                        </Dialog.Positioner>
-                    </Dialog.Root>))}
-            </HStack>
+                                    ) : (
+                                        <Dialog.Body>
+                                            <Box display="flex" justifyContent={"center"}>
+                                                <Image style={{ position: 'absolute', top: '40px' }} src={`./images/${wonCard.image_file}`} alt={`./images/${wonCard.image_file}`} width={200} />
+                                                <Image style={{ position: 'absolute', top: '20px' }} src={`./images/${wonCard.tier}_CardBase.png`} alt={`${wonCard.tier}_CardBase`} width={260} />
+                                                <Text style={{ position: 'absolute', top: '242px', fontSize: '16px', color: 'white', fontWeight: '600' }} >{wonCard.title}</Text>
+                                                <Text style={{ position: 'absolute', top: '286px', fontSize: '10px', color: 'black', maxWidth: '180px' }}>{wonCard.description}</Text>
+                                            </Box>
+                                        </Dialog.Body>
+                                    )}
+                                </Dialog.Content>
+                            </Dialog.Positioner>
+                        </Dialog.Root>))}
+                </HStack>
             </Box>
 
         </VStack>
 
-        
+
 
 
         // <VStack width={"100vw"} display={"flex"} justifyContent={"center"} alignItems={"center"}>

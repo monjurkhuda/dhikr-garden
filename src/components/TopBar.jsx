@@ -15,9 +15,9 @@ const TopBar = () => {
                 <HStack>
                     <Image src={`./images/logo.png`}
                         alt="logo"
-                        width='20px' height='40px'
+                        width='24px' height='40px'
                     />
-                    <Text fontSize={"sm"} fontFamily={"mono"} >Dhikr Garden</Text>
+                    <Text fontSize={"sm"} fontFamily={"mono"}>Istighfar Garden</Text>
                 </HStack>
             </Link>
         </HStack>

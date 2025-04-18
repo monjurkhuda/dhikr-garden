@@ -11,8 +11,6 @@ function Account() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
-
-  const [morningEveningSplit, setMorningEveningSplit] = useState(localStorage.getItem("morning_evening_split") === "true" || false)
   const [dailyAdhkar, setDailyAdhkar] = useState(JSON.parse(localStorage.getItem("daily_adhkar")) || {});
   const [coins, setCoins] = useState(JSON.parse(localStorage.getItem("coins")) || 0);
 
@@ -31,7 +29,6 @@ function Account() {
         await setDoc(doc(db, "users", userId), {
           coins: coins,
           streak: 0,
-          morning_evening_split: morningEveningSplit,
           cards: {
             sapphire: [],
             gold: [],

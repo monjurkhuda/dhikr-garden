@@ -15,8 +15,9 @@ adhkarData.adhkar.forEach(adhkar => {
     }
 })
 
+
 function AddDhikr() {
-    const [selectedType, setSeletedType] = useState("repentance")
+    const [selectedType, setSeletedType] = useState("short")
     const [value, setValue] = useState("")
     const [loading, setLoading] = useState(true)
 
@@ -33,8 +34,8 @@ function AddDhikr() {
     return (
         <Stack paddingTop={4} paddingRight={4} paddingLeft={4}>
             <Toaster />
-            <TopBar/>
-            <Text>Dhikr Types:</Text>
+            <TopBar />
+            <Text>Choose Istighfar Length:</Text>
 
             <HStack wrap="wrap">
                 {adhkarTypes.map(type => {
@@ -51,9 +52,23 @@ function AddDhikr() {
             </HStack>
 
             <VStack>
-                <Text>{selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}</Text>
+                <HStack width="100%" display="flex" justifyContent="space-between">
+                    <Text>{selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}</Text>
+                    <HStack>
+                        <Text>Press </Text>
 
-                <Accordion.Root collapsible paddingBottom={20} overflowY={"scroll"} maxHeight={"70vh"} defaultValue={value}>
+                        <Text backgroundColor='#87e307' // Initial gold color
+                            color='black'
+                            boxShadow='0px 6px 0px 0px #71ba0b'
+                            width="20px"
+                            height="20px"
+                            textAlign="center"
+                            fontSize="18px">+</Text>
+                        <Text> to Add Istighfar</Text>
+                    </HStack>
+                </HStack>
+
+                <Accordion.Root collapsible paddingBottom={20} overflowY={"scroll"} maxHeight={"70vh"}>
                     {filtered_adhkar.map((item, index) => (
                         <Accordion.Item key={item.id} value={item.translation}>
 
@@ -69,8 +84,14 @@ function AddDhikr() {
                                         setDoc(userRef, { daily_adhkar: arrayUnion(item) }, { merge: true });
                                     } else {
                                         let dailyAdhkarString = localStorage.getItem("daily_adhkar");
+                                        
                                         let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
+                                        console.log(localStorage, dailyAdhkarString, dailyAdhkarObj)
+
                                         localStorage.setItem("last_repeat_date", "");
+
+
+
                                         dailyAdhkarObj[item.id] = {
                                             type: item.type,
                                             arabic: item.arabic,
@@ -78,10 +99,13 @@ function AddDhikr() {
                                             transliteration: item.transliteration,
                                             benefits: item.benefits,
                                             repetition: 1,
-                                            repeated_today: 0,
-                                            time: "morning"
+                                            repeated_today: 0
                                         };
                                         localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
+
+
+                                      
+
                                     }
 
                                     toaster.create({

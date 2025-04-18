@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../firebase';
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { Box, VStack, Text, Button, Flex, Card, CheckboxCard, Stack, HStack } from '@chakra-ui/react'
-import { LuChevronDown, LuChevronUp, LuX } from "react-icons/lu";
+import { LuChevronDown, LuChevronUp, LuChevronsUp, LuX } from "react-icons/lu";
 import { BiAddToQueue } from "react-icons/bi";
 import { LuSquareSplitHorizontal } from "react-icons/lu";
 import { FiSun } from "react-icons/fi";
@@ -50,27 +50,15 @@ function Home() {
         if (userinfo) {
             setCoins(userinfo.coins)
             setStreak(userinfo.streak)
-            setMorningEveningSplit(userinfo.morning_evening_split)
         }
         if (adhkarinfo) {
             setDailyAdhkar(adhkarinfo)
         }
     }, [userinfo, adhkarinfo])
 
-    useEffect(() => {
-
-    }, [morningEveningSplit])
-
     const toggleExpand = () => {
         setBenefitsCardExpanded(!benefitsCardExpanded);
-    };
-
-    function toggleMorningEveningSplit() {
-        updateDoc(userRef, {
-            morning_evening_split: !morningEveningSplit
-        });
-        setMorningEveningSplit(!morningEveningSplit)
-    };
+    };    
 
     if (loading) { return <Text>Loading...</Text> }
 
@@ -86,31 +74,27 @@ function Home() {
             </HStack>
 
             <HStack width={"80vw"} maxWidth={"300px"} justifyContent={"space-between"}>
-                <Text fontSize="lg" fontWeight="bold">Daily Dhikr:</Text>
+                <Text fontSize="lg" fontWeight="bold">Daily Istighfar:</Text>
                 <HStack>
-                    <Button size={"xs"} onClick={() => toggleMorningEveningSplit()}>
-                        {morningEveningSplit ? <> <BsArrowsCollapseVertical /> Join </> : <> <LuSquareSplitHorizontal /> Split </>}
-                    </Button>
-
                     <Button size={"xs"} onClick={() => navigate('/adddhikr')}><><BiAddToQueue />Add</></Button>
 
-                    {/* <Button size={"xs"}
+                    <Button size={"xs"}
                     colorPalette={"red"}
                     onClick={() => {
                         localStorage.clear()
                         setDailyAdhkar({})
                     }
-                    }>Clear</Button> */}
+                    }>Clear</Button>
                 </HStack>
             </HStack>
 
             {Object.keys(dailyAdhkar).length < 1 &&
                 <Stack>
-                    <Text>Please add Dhikr to recite everyday</Text>
-                    <Button onClick={() => navigate('/adddhikr')}><BiAddToQueue /> Add</Button>
+                    <Text>Please add Istighfar to recite everyday</Text>
+                    <Button onClick={() => navigate('/adddhikr')}><BiAddToQueue/>Add Istighfar</Button>
                 </Stack>}
 
-            {!morningEveningSplit && Object.keys(dailyAdhkar).length > 0 && Object.keys(dailyAdhkar).map((key) => (
+            {Object.keys(dailyAdhkar).length > 0 && Object.keys(dailyAdhkar).map((key) => (
                 <CheckboxCard.Root checked={dailyAdhkar[key].repeated_today >= dailyAdhkar[key].repetition} readOnly width="320px" height="100px" size="md" key={(key)}>
                     <CheckboxCard.HiddenInput />
                     <CheckboxCard.Control>
@@ -124,6 +108,25 @@ function Home() {
 
                                 <HStack width={"100%"} display={"flex"} justifyContent={"flex-end"}>
                                     <Text fontSize={"16px"} fontWeight={"700"}>{dailyAdhkar[key].repetition}x</Text>
+
+                                    <Button
+                                        size={"xs"}
+                                        onClick={() => {
+                                            const adhkarRef = doc(db, "daily_adhkar", user.uid)
+                                            setAdhkarinfo(prev => {
+                                                const updatedAdhkar = [...prev];
+                                                const index = updatedAdhkar.findIndex(item => item.id === prev[key].id);
+                                                if (index !== -1) {
+                                                    updatedAdhkar[index] = { ...updatedAdhkar[index], repetition: updatedAdhkar[index].repetition + 10 };
+                                                }
+                                                return updatedAdhkar;
+                                            })
+                                            adhkarinfo[key].repetition += 10
+                                            updateDoc(adhkarRef, { daily_adhkar: adhkarinfo })
+                                        }}
+                                    >
+                                        <LuChevronsUp /> 10
+                                    </Button>
 
                                     <Button
                                         size={"xs"}
@@ -192,225 +195,13 @@ function Home() {
                         </CheckboxCard.Content>
                     </CheckboxCard.Control>
                 </CheckboxCard.Root>
-            ))}
-
-            {morningEveningSplit &&
-                <HStack width={"320px"} display={"flex"} justifyContent={"flex-start"}>
-                    <FiSun size={"18px"} color="#f7a436" />
-                    <Text fontSize="18px" fontWeight={"600"} color="#f7a436">Morning</Text>
-                </HStack>}
-
-            {morningEveningSplit && Object.keys(dailyAdhkar).length > 0 && Object.keys(dailyAdhkar).map((key) => (
-                dailyAdhkar[key].time === "morning" &&
-                <CheckboxCard.Root checked={dailyAdhkar[key].repeated_today >= dailyAdhkar[key].repetition} readOnly width="320px" height="100px" size="md" key={(key)}>
-                    <CheckboxCard.HiddenInput />
-                    <CheckboxCard.Control>
-                        <CheckboxCard.Content>
-                            <VStack width={"100%"}>
-                                <HStack width={"100%"} display={"flex"} justifyContent={"space-between"}>
-                                    <Text lineClamp={2}>{dailyAdhkar[key].transliteration}</Text>
-                                    <CheckboxCard.Indicator />
-                                </HStack>
-
-                                <HStack width={"100%"} display={"flex"} justifyContent={"flex-end"}>
-
-                                    <Text fontSize={"16px"} fontWeight={"700"}>{dailyAdhkar[key].repetition}x</Text>
-
-                                    <Button
-                                        size={"xs"}
-                                        onClick={() => {
-                                            const adhkarRef = doc(db, "daily_adhkar", user.uid)
-                                            setAdhkarinfo(prev => {
-                                                const updatedAdhkar = [...prev];
-                                                const index = updatedAdhkar.findIndex(item => item.id === prev[key].id);
-                                                if (index !== -1) {
-                                                    updatedAdhkar[index] = { ...updatedAdhkar[index], repetition: updatedAdhkar[index].repetition + 1 };
-                                                }
-                                                return updatedAdhkar;
-                                            })
-                                            adhkarinfo[key].repetition += 1
-                                            updateDoc(adhkarRef, { daily_adhkar: adhkarinfo })
-                                        }}
-                                    >
-                                        <LuChevronUp />
-                                    </Button>
-
-                                    <Button
-                                        size={"xs"}
-                                        onClick={() => {
-                                            const adhkarRef = doc(db, "daily_adhkar", user.uid)
-                                            setAdhkarinfo(prev => {
-                                                const updatedAdhkar = [...prev];
-                                                const index = updatedAdhkar.findIndex(item => item.id === prev[key].id);
-                                                if (index !== -1 && updatedAdhkar[index].repetition > 1) {
-                                                    updatedAdhkar[index] = { ...updatedAdhkar[index], repetition: updatedAdhkar[index].repetition - 1 };
-                                                }
-                                                return updatedAdhkar;
-                                            })
-                                            if (adhkarinfo[key].repetition > 1) {
-                                                adhkarinfo[key].repetition -= 1
-                                                updateDoc(adhkarRef, { daily_adhkar: adhkarinfo })
-                                            }
-                                        }}
-                                    >
-                                        <LuChevronDown />
-                                    </Button>
-
-                                    <Button size={"xs"}
-                                        onClick={() => {
-                                            const adhkarRef = doc(db, "daily_adhkar", user.uid)
-                                            setAdhkarinfo(prev => {
-                                                const updatedAdhkar = [...prev];
-                                                const index = updatedAdhkar.findIndex(item => item.id === prev[key].id);
-                                                if (index !== -1) {
-                                                    updatedAdhkar[index] = { ...updatedAdhkar[index], time: "evening" };
-                                                }
-                                                return updatedAdhkar;
-                                            })
-                                            adhkarinfo[key].time = "evening"
-                                            updateDoc(adhkarRef, { daily_adhkar: adhkarinfo })
-                                        }}>
-                                        <RiMoonClearLine />
-                                    </Button>
-
-                                    <Button
-                                        size={"xs"}
-                                        onClick={() => {
-                                            const adhkarRef = doc(db, "daily_adhkar", user.uid)
-                                            setAdhkarinfo(prev => {
-                                                const updatedAdhkar = [...prev];
-                                                const index = updatedAdhkar.findIndex(item => item.id === prev[key].id);
-                                                if (index !== -1) {
-                                                    updatedAdhkar.splice(index, 1);
-                                                }
-                                                return updatedAdhkar;
-                                            })
-
-                                            const index = adhkarinfo.indexOf(adhkarinfo[key]);
-                                            if (index > -1) {
-                                                adhkarinfo.splice(index, 1);
-                                            }
-                                            updateDoc(adhkarRef, { daily_adhkar: adhkarinfo })
-                                        }}
-                                    ><LuX /></Button>
-
-                                </HStack>
-
-                            </VStack>
-                        </CheckboxCard.Content>
-                    </CheckboxCard.Control>
-                </CheckboxCard.Root>
-            ))}
-
-            {morningEveningSplit && <HStack width={"320px"} display={"flex"} justifyContent={"flex-start"}><RiMoonClearLine size={"18px"} color="#975df5" /> <Text fontSize="18px" fontWeight={"600"} color="#975df5">Evening</Text></HStack>}
-
-            {morningEveningSplit && Object.keys(dailyAdhkar).length > 0 && Object.keys(dailyAdhkar).map((key) => (
-                dailyAdhkar[key].time === "evening" && <CheckboxCard.Root checked={dailyAdhkar[key].repeated_today >= dailyAdhkar[key].repetition} readOnly width="320px" height="100px" size="md" key={(key)}>
-                    <CheckboxCard.HiddenInput />
-                    <CheckboxCard.Control>
-                        <CheckboxCard.Content>
-                            <VStack width={"100%"}>
-                                <HStack width={"100%"} display={"flex"} justifyContent={"space-between"}>
-                                    <Text lineClamp={2}>{dailyAdhkar[key].transliteration}</Text>
-                                    <CheckboxCard.Indicator />
-                                </HStack>
-
-
-                                <HStack width={"100%"} display={"flex"} justifyContent={"flex-end"}>
-
-                                    <Text fontSize={"16px"} fontWeight={"700"}>{dailyAdhkar[key].repetition}x</Text>
-
-                                    <Button
-                                        size={"xs"}
-                                        onClick={() => {
-                                            const adhkarRef = doc(db, "daily_adhkar", user.uid)
-                                            setAdhkarinfo(prev => {
-                                                const updatedAdhkar = [...prev];
-                                                const index = updatedAdhkar.findIndex(item => item.id === prev[key].id);
-                                                if (index !== -1) {
-                                                    updatedAdhkar[index] = { ...updatedAdhkar[index], repetition: updatedAdhkar[index].repetition + 1 };
-                                                }
-                                                return updatedAdhkar;
-                                            })
-                                            adhkarinfo[key].repetition += 1
-                                            updateDoc(adhkarRef, { daily_adhkar: adhkarinfo })
-                                        }}
-                                    >
-                                        <LuChevronUp />
-                                    </Button>
-
-                                    <Button
-                                        size={"xs"}
-                                        onClick={() => {
-                                            const adhkarRef = doc(db, "daily_adhkar", user.uid)
-                                            setAdhkarinfo(prev => {
-                                                const updatedAdhkar = [...prev];
-                                                const index = updatedAdhkar.findIndex(item => item.id === prev[key].id);
-                                                if (index !== -1 && updatedAdhkar[index].repetition > 1) {
-                                                    updatedAdhkar[index] = { ...updatedAdhkar[index], repetition: updatedAdhkar[index].repetition - 1 };
-                                                }
-                                                return updatedAdhkar;
-                                            })
-                                            if (adhkarinfo[key].repetition > 1) {
-                                                adhkarinfo[key].repetition -= 1
-                                                updateDoc(adhkarRef, { daily_adhkar: adhkarinfo })
-                                            }
-                                        }}
-                                    >
-                                        <LuChevronDown />
-                                    </Button>
-
-                                    <Button
-                                        size={"xs"}
-                                        onClick={() => {
-                                            const adhkarRef = doc(db, "daily_adhkar", user.uid)
-                                            setAdhkarinfo(prev => {
-                                                const updatedAdhkar = [...prev];
-                                                const index = updatedAdhkar.findIndex(item => item.id === prev[key].id);
-                                                if (index !== -1) {
-                                                    updatedAdhkar[index] = { ...updatedAdhkar[index], time: "morning" };
-                                                }
-                                                return updatedAdhkar;
-                                            })
-                                            adhkarinfo[key].time = "morning"
-                                            updateDoc(adhkarRef, { daily_adhkar: adhkarinfo })
-                                        }}>
-                                        <FiSun />
-                                    </Button>
-
-                                    <Button
-                                        size={"xs"}
-                                        onClick={() => {
-                                            const adhkarRef = doc(db, "daily_adhkar", user.uid)
-                                            setAdhkarinfo(prev => {
-                                                const updatedAdhkar = [...prev];
-                                                const index = updatedAdhkar.findIndex(item => item.id === prev[key].id);
-                                                if (index !== -1) {
-                                                    updatedAdhkar.splice(index, 1);
-                                                }
-                                                return updatedAdhkar;
-                                            })
-
-                                            const index = adhkarinfo.indexOf(adhkarinfo[key]);
-                                            if (index > -1) {
-                                                adhkarinfo.splice(index, 1);
-                                            }
-                                            updateDoc(adhkarRef, { daily_adhkar: adhkarinfo })
-                                        }}
-                                    ><LuX /></Button>
-
-                                </HStack>
-                            </VStack>
-                        </CheckboxCard.Content>
-                    </CheckboxCard.Control>
-                </CheckboxCard.Root>
-            ))}
+            ))}            
 
             {Object.keys(dailyAdhkar).length < 1 &&
                 <Card.Root width="320px" maxHeight="300px" overflow="auto" margin={4}>
                     <Flex justifyContent="space-between" alignItems="center" p={2}>
                         <Text fontSize="md" fontWeight="bold">
-                            Benefits of Dhikr
+                            Benefits
                         </Text>
                         <Button variant="ghost" onClick={toggleExpand} aria-label="Toggle expand">
                             {benefitsCardExpanded ? <LuChevronUp size="20px" /> : <LuChevronDown size="20px" />}

@@ -17,7 +17,6 @@ let randomIndex = Math.floor(Math.random() * adhkarData.adhkar.length);
 
 function HomePublic() {
     const [benefitsCardExpanded, setBenefitsCardExpanded] = useState(true)
-    const [morningEveningSplit, setMorningEveningSplit] = useState(localStorage.getItem("morning_evening_split") === "true" || false)
     const [dailyAdhkar, setDailyAdhkar] = useState(JSON.parse(localStorage.getItem("daily_adhkar")) || {});
     const [coins, setCoins] = useState(localStorage.getItem("coins") || 0);
 
@@ -36,14 +35,11 @@ function HomePublic() {
 
     useEffect(() => {
         localStorage.setItem("coins", coins)
-        localStorage.setItem("morning_evening_split", morningEveningSplit)
-    }, [coins, morningEveningSplit])
+    }, [coins])
 
     const toggleExpand = () => {
         setBenefitsCardExpanded(!benefitsCardExpanded);
     };
-
-    console.log(dailyAdhkar)
 
     return (
         <Stack display={"flex"} alignItems={"center"} maxHeight={"80vh"} paddingBottom={"60px"} overflow="auto">
@@ -55,24 +51,26 @@ function HomePublic() {
             </HStack>
 
             <HStack width={"80vw"} maxWidth={"300px"} justifyContent={"space-between"}>
-                <Text fontSize="lg" fontWeight="bold">Daily Dhikr:</Text>
+                <Text fontSize="lg" fontWeight="bold">Daily Istighfar:</Text>
                 <HStack>
-                    <Button size={"xs"} onClick={() => setMorningEveningSplit(!morningEveningSplit)}>
-                        {morningEveningSplit ? <> <BsArrowsCollapseVertical /> Join </> : <> <LuSquareSplitHorizontal /> Split </>}
-                    </Button>
-
                     <Button size={"xs"} onClick={() => navigate('/adddhikr')}><><BiAddToQueue />Add</></Button>
-
+                    <Button size={"xs"}
+                    colorPalette={"red"}
+                    onClick={() => {
+                        localStorage.clear()
+                        setDailyAdhkar({})
+                    }
+                    }>Clear</Button>
                 </HStack>
             </HStack>
 
             {Object.keys(dailyAdhkar).length < 1 &&
                 <Stack>
-                    <Text>Please add Dhikr to recite everyday</Text>
-                    <Button onClick={() => navigate('/adddhikr')}><BiAddToQueue /> Add</Button>
+                    <Text>Please add Istighfar to recite everyday</Text>
+                    <Button onClick={() => navigate('/adddhikr')}><BiAddToQueue /> Add Istighfar</Button>
                 </Stack>}
 
-            {!morningEveningSplit && Object.keys(dailyAdhkar).length > 0 && Object.keys(dailyAdhkar).map((key) => (
+            {Object.keys(dailyAdhkar).length > 0 && Object.keys(dailyAdhkar).map((key) => (
                 <CheckboxCard.Root checked={dailyAdhkar[key].repeated_today >= dailyAdhkar[key].repetition} readOnly width="320px" height="100px" size="md" key={(key)}>
                     <CheckboxCard.HiddenInput />
                     <CheckboxCard.Control>
@@ -132,160 +130,11 @@ function HomePublic() {
                 </CheckboxCard.Root>
             ))}
 
-            {morningEveningSplit &&
-                <HStack width={"320px"} display={"flex"} justifyContent={"flex-start"}>
-                    <FiSun size={"18px"} color="#f7a436" />
-                    <Text fontSize="18px" fontWeight={"600"} color="#f7a436">Morning</Text>
-                </HStack>}
-
-            {morningEveningSplit && Object.keys(dailyAdhkar).length > 0 && Object.keys(dailyAdhkar).map((key) => (
-                dailyAdhkar[key].time === "morning" &&
-                <CheckboxCard.Root checked={dailyAdhkar[key].repeated_today >= dailyAdhkar[key].repetition} readOnly width="320px" height="100px" size="md" key={(key)}>
-                    <CheckboxCard.HiddenInput />
-                    <CheckboxCard.Control>
-                        <CheckboxCard.Content>
-                            <VStack width={"100%"}>
-                                <HStack width={"100%"} display={"flex"} justifyContent={"space-between"}>
-                                    <Text lineClamp={2}>{dailyAdhkar[key].transliteration}</Text>
-                                    <CheckboxCard.Indicator />
-                                </HStack>
-
-                                <HStack width={"100%"} display={"flex"} justifyContent={"flex-end"}>
-                                    <Text fontSize={"16px"} fontWeight={"700"}>{dailyAdhkar[key].repetition}x</Text>
-
-                                    <Button
-                                        size="xs"
-                                        onClick={() => {
-                                            let dailyAdhkarString = localStorage.getItem("daily_adhkar");
-                                            let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
-                                            dailyAdhkarObj[key].repetition = dailyAdhkarObj[key].repetition + 1
-                                            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
-                                            setDailyAdhkar(dailyAdhkarObj)
-                                        }}
-                                    >
-                                        <LuChevronUp />
-                                    </Button>
-
-                                    <Button
-                                        size="xs"
-                                        onClick={() => {
-                                            let dailyAdhkarString = localStorage.getItem("daily_adhkar");
-                                            let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
-                                            dailyAdhkarObj[key].repetition = dailyAdhkarObj[key].repetition - 1
-                                            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
-                                            setDailyAdhkar(dailyAdhkarObj)
-                                        }}
-                                    >
-                                        <LuChevronDown />
-                                    </Button>
-
-                                    <Button
-                                        size="xs"
-                                        onClick={() => {
-                                            let dailyAdhkarString = localStorage.getItem("daily_adhkar");
-                                            let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
-                                            dailyAdhkarObj[key].time = "evening"
-                                            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
-                                            setDailyAdhkar(dailyAdhkarObj)
-                                        }}>
-                                        <RiMoonClearLine />
-                                    </Button>
-
-                                    <Button
-                                        size="xs"
-                                        onClick={() => {
-                                            let dailyAdhkarString = localStorage.getItem("daily_adhkar");
-                                            let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
-                                            delete dailyAdhkarObj[key]
-                                            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
-                                            setDailyAdhkar(dailyAdhkarObj)
-                                        }}
-                                    ><LuX /></Button>
-                                </HStack>
-                            </VStack>
-                        </CheckboxCard.Content>
-                    </CheckboxCard.Control>
-                </CheckboxCard.Root>
-            ))}
-
-            {morningEveningSplit && <HStack width={"320px"} display={"flex"} justifyContent={"flex-start"}><RiMoonClearLine size={"18px"} color="#975df5" /> <Text fontSize="18px" fontWeight={"600"} color="#975df5">Evening</Text></HStack>}
-
-            {morningEveningSplit && Object.keys(dailyAdhkar).length > 0 && Object.keys(dailyAdhkar).map((key) => (
-                dailyAdhkar[key].time === "evening" && <CheckboxCard.Root checked={dailyAdhkar[key].repeated_today >= dailyAdhkar[key].repetition} readOnly width="320px" height="100px" size="md" key={(key)}>
-                    <CheckboxCard.HiddenInput />
-                    <CheckboxCard.Control>
-                        <CheckboxCard.Content>
-
-                            <VStack width={"100%"}>
-                                <HStack width={"100%"} display={"flex"} justifyContent={"space-between"}>
-                                    <Text lineClamp={2}>{dailyAdhkar[key].transliteration}</Text>
-                                    <CheckboxCard.Indicator />
-                                </HStack>
-
-                                <HStack width={"100%"} display={"flex"} justifyContent={"flex-end"}>
-                                    <Text fontSize={"16px"} fontWeight={"700"}>{dailyAdhkar[key].repetition}x</Text>
-
-                                    <Button
-                                        size="xs"
-                                        onClick={() => {
-                                            let dailyAdhkarString = localStorage.getItem("daily_adhkar");
-                                            let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
-                                            dailyAdhkarObj[key].repetition = dailyAdhkarObj[key].repetition + 1
-                                            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
-                                            setDailyAdhkar(dailyAdhkarObj)
-                                        }}
-                                    >
-                                        <LuChevronUp />
-                                    </Button>
-
-                                    <Button
-                                        size="xs"
-                                        onClick={() => {
-                                            let dailyAdhkarString = localStorage.getItem("daily_adhkar");
-                                            let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
-                                            dailyAdhkarObj[key].repetition = dailyAdhkarObj[key].repetition - 1
-                                            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
-                                            setDailyAdhkar(dailyAdhkarObj)
-                                        }}
-                                    >
-                                        <LuChevronDown />
-                                    </Button>
-
-                                    <Button
-                                        size="xs"
-                                        onClick={() => {
-                                            let dailyAdhkarString = localStorage.getItem("daily_adhkar");
-                                            let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
-                                            dailyAdhkarObj[key].time = "morning"
-                                            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
-                                            setDailyAdhkar(dailyAdhkarObj)
-                                        }}>
-                                        <FiSun />
-                                    </Button>
-
-                                    <Button
-                                        size="xs"
-                                        onClick={() => {
-                                            let dailyAdhkarString = localStorage.getItem("daily_adhkar");
-                                            let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
-                                            delete dailyAdhkarObj[key]
-                                            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
-                                            setDailyAdhkar(dailyAdhkarObj)
-                                        }}
-                                    ><LuX /></Button>
-                                </HStack>
-                            </VStack>
-
-                        </CheckboxCard.Content>
-                    </CheckboxCard.Control>
-                </CheckboxCard.Root>
-            ))}
-
             {Object.keys(dailyAdhkar).length < 1 &&
                 <Card.Root width="320px" maxHeight="300px" overflow="auto" margin={4}>
                     <Flex justifyContent="space-between" alignItems="center" p={2}>
                         <Text fontSize="md" fontWeight="bold">
-                            Benefits of Dhikr
+                            Benefits
                         </Text>
                         <Button variant="ghost" onClick={toggleExpand} aria-label="Toggle expand">
                             {benefitsCardExpanded ? <LuChevronUp size="20px" /> : <LuChevronDown size="20px" />}
