@@ -1,26 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom'
 import { Box, VStack, Text, Button, Flex, Card, CheckboxCard, Stack, HStack } from '@chakra-ui/react'
-import { LuChevronDown, LuChevronUp, LuX } from "react-icons/lu";
+import { LuChevronDown, LuChevronUp, LuChevronsUp, LuX } from "react-icons/lu";
 import { BiAddToQueue } from "react-icons/bi";
-import { LuSquareSplitHorizontal } from "react-icons/lu";
-import { FiSun } from "react-icons/fi";
-import { RiMoonClearLine } from "react-icons/ri";
 import { GiTwoCoins } from "react-icons/gi";
-import { BsArrowsCollapseVertical, BsFillPlayFill } from "react-icons/bs";
+import { BsFillPlayFill } from "react-icons/bs";
+import { RiFireFill } from "react-icons/ri";
 import TopBar from "../components/TopBar"
-
 import benefitsData from "../assets/data/benefits_of_dhikr.json";
-import adhkarData from "../assets/data/adhkar.json"
-
-let randomIndex = Math.floor(Math.random() * adhkarData.adhkar.length);
 
 function HomePublic() {
     const [benefitsCardExpanded, setBenefitsCardExpanded] = useState(true)
     const [dailyAdhkar, setDailyAdhkar] = useState(JSON.parse(localStorage.getItem("daily_adhkar")) || {});
     const [coins, setCoins] = useState(localStorage.getItem("coins") || 0);
+    const [streak, setStreak] = useState(localStorage.getItem("streak") || 0);
 
     const navigate = useNavigate();
+    let randomIndex = Math.floor(Math.random() * benefitsData.benefits_of_dhikr.length);
 
     useEffect(() => {
         if (!localStorage.getItem("daily_adhkar")) {
@@ -30,7 +26,8 @@ function HomePublic() {
             let dailyAdhkarString = localStorage.getItem("daily_adhkar");
             let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
             setDailyAdhkar(dailyAdhkarObj)
-        }
+        }        
+        randomIndex = Math.floor(Math.random() * benefitsData.benefits_of_dhikr.length);
     }, [])
 
     useEffect(() => {
@@ -44,8 +41,9 @@ function HomePublic() {
     return (
         <Stack display={"flex"} alignItems={"center"} maxHeight={"80vh"} paddingBottom={"60px"} overflow="auto">
             <TopBar />
-            <HStack width={"80vw"} maxWidth={"300px"} marginTop={4} display={"flex"} justifyContent={"flex-end"}>
-                <HStack><GiTwoCoins />
+            <HStack gap={"20px"} width={"80vw"} maxWidth={"300px"} marginTop={4} display={"flex"} justifyContent={"flex-end"}>
+                <HStack gap={"2px"}>
+                    <GiTwoCoins />
                     <Text>{coins}</Text>
                 </HStack>
             </HStack>
@@ -55,12 +53,12 @@ function HomePublic() {
                 <HStack>
                     <Button size={"xs"} onClick={() => navigate('/adddhikr')}><><BiAddToQueue />Add</></Button>
                     <Button size={"xs"}
-                    colorPalette={"red"}
-                    onClick={() => {
-                        localStorage.clear()
-                        setDailyAdhkar({})
-                    }
-                    }>Clear</Button>
+                        colorPalette={"red"}
+                        onClick={() => {
+                            localStorage.clear()
+                            setDailyAdhkar({})
+                        }
+                        }>Clear</Button>
                 </HStack>
             </HStack>
 
@@ -84,6 +82,19 @@ function HomePublic() {
 
                                 <HStack width={"100%"} display={"flex"} justifyContent={"flex-end"}>
                                     <Text fontSize={"16px"} fontWeight={"700"}>{dailyAdhkar[key].repetition}x</Text>
+
+                                    <Button
+                                        size={"xs"}
+                                        onClick={() => {
+                                            let dailyAdhkarString = localStorage.getItem("daily_adhkar");
+                                            let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
+                                            dailyAdhkarObj[key].repetition = dailyAdhkarObj[key].repetition + 10
+                                            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
+                                            setDailyAdhkar(dailyAdhkarObj)
+                                        }}
+                                    >
+                                        <LuChevronsUp /> 10
+                                    </Button>
 
                                     <Button
                                         size={"xs"}
@@ -156,14 +167,14 @@ function HomePublic() {
                     <Button
                         size={"xl"}
                         onClick={() => navigate('/dailydhikr')}
-                        backgroundColor='#FFD700' // Initial gold color
+                        backgroundColor='#FFD700'  
                         color='black'
-                        boxShadow='0px 12px 0px 0px #cfaf06' // 3D shadow
+                        boxShadow='0px 12px 0px 0px #cfaf06' 
                         fontWeight='bold'
                         _active={{
                             backgroundColor: 'white',
                             boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff',
-                            transform: 'translateY(4px)' //Keeps the button visually pressed down on click
+                            transform: 'translateY(4px)' 
                         }}
                         _hover={{ backgroundColor: 'white', boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff' }}
                     >

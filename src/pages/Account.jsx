@@ -11,8 +11,11 @@ function Account() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
+
+  const [morningEveningSplit, setMorningEveningSplit] = useState(localStorage.getItem("morning_evening_split") === "true" || false)
   const [dailyAdhkar, setDailyAdhkar] = useState(JSON.parse(localStorage.getItem("daily_adhkar")) || {});
   const [coins, setCoins] = useState(JSON.parse(localStorage.getItem("coins")) || 0);
+  const [streak, setStreak] = useState(JSON.parse(localStorage.getItem("streak")) || 0);
 
   const [usercountry, setUserCountry] = useState('');
   const [username, setUsername] = useState('');
@@ -29,22 +32,12 @@ function Account() {
         await setDoc(doc(db, "users", userId), {
           coins: coins,
           streak: 0,
-          cards: {
-            sapphire: [],
-            gold: [],
-            silver: [],
-            bronze: []
-          }
-        });
-
-        await setDoc(doc(db, "daily_adhkar", userId), {
-          last_repeat_date: "",
-          last_complete_date: "",
-          daily_adhkar: dailyAdhkar,
-        });
+          dhikr_last_completed: "",
+          cards: []
+        });      
 
         await setDoc(doc(db, "leaderboard", userId), {
-          coins: 0,
+          coins: coins,
           name: username,
           country: usercountry,
           region: usercity
@@ -61,8 +54,6 @@ function Account() {
               coins: increment(coins),
             });            
           }          
-        } else {
-          console.log("No such document!");
         }        
       }
     } catch (error) {

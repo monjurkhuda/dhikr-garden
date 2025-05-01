@@ -9,49 +9,92 @@ import { GiTwoCoins } from "react-icons/gi";
 import TopBar from "../components/TopBar";
 import { auth, db } from '../firebase';
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-
 import benefitsData from "../assets/data/benefits_of_dhikr.json";
 import adhkarData from "../assets/data/adhkar.json"
 
-function Home() {
+function HomeTab() {
     const [benefitsCardExpanded, setBenefitsCardExpanded] = useState(true)
-    const [dailyAdhkar, setDailyAdhkar] = useState([]);
-    const [coins, setCoins] = useState(0);
-    const [streak, setStreak] = useState(0);
-    const [userinfo, setUserinfo] = useState();
-    const [adhkarinfo, setAdhkarinfo] = useState({});
     const [loading, setLoading] = useState(true);
 
     let randomIndex = Math.floor(Math.random() * benefitsData.benefits_of_dhikr.length);
+    const todayDate = new Date().toLocaleDateString();
     const user = auth.currentUser;
     const navigate = useNavigate();
 
+    const [coins, setCoins] = useState(Number(localStorage.getItem("coins")) || 0);
+    const [streak, setStreak] = useState(Number(localStorage.getItem("streak")) || 0);
+    const [dailyAdhkar, setDailyAdhkar] = useState(JSON.parse(localStorage.getItem("daily_adhkar")) || {});
+
+    //localStorage.setItem("last_userinfo_fetch", "4/20/2025")
 
     useEffect(() => {
-        async function fetchData() {
-            const userSnap = await getDoc(doc(db, "users", user.uid));
-            const adhkarSnap = await getDoc(doc(db, "daily_adhkar", user.uid));
-            if (userSnap.exists()) {
-                setUserinfo(userSnap.data())
-            }
-            if (adhkarSnap.exists()) {
-                setAdhkarinfo(adhkarSnap.data().daily_adhkar)
-            }
-            setLoading(false)
+        if (!localStorage.getItem("daily_adhkar")) {
+            let empty_obj = {}
+            localStorage.setItem("daily_adhkar", JSON.stringify(empty_obj))
         }
-        fetchData();
+
+        if (!localStorage.getItem("coins")) {
+            localStorage.setItem("coins", 0)
+        }
+
+        if (!localStorage.getItem("streak")) {
+            localStorage.setItem("streak", 0)
+        }
+
+        if (localStorage.getItem("dhikr_last_started") != todayDate) {
+            Object.keys(dailyAdhkar).map((key) => dailyAdhkar[key].repeated_today = 0)
+            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkar));
+        }
+
+        if (localStorage.getItem("last_userinfo_fetch") != todayDate) {
+            async function fetchData() {
+                const userSnap = await getDoc(doc(db, "users", user.uid));
+
+                if (userSnap.exists()) {
+                    let dhikrLastCompletedRes = userSnap.data().dhikr_last_completed
+                    localStorage.setItem("dhikr_last_completed", dhikrLastCompletedRes)
+                    const yesterdayDate = new Date(new Date().setDate(new Date().getDate() - 1)).toLocaleDateString();
+
+                    let coinsRes = userSnap.data().coins
+                    if (coinsRes > Number(localStorage.getItem("coins"))) {
+                        localStorage.setItem("coins", coinsRes)
+                        setCoins(coinsRes)
+                    } else {
+                        const userRef = doc(db, "users", user.uid)
+                        updateDoc(userRef, {
+                            coins: Number(localStorage.getItem("coins")),
+                        });
+                    }
+
+                    if (dhikrLastCompletedRes != yesterdayDate) {
+                        localStorage.setItem("streak", 0)
+                        setStreak(0)
+                        const userRef = doc(db, "users", user.uid)
+                        updateDoc(userRef, {
+                            streak: 0,
+                        });
+                    }
+                    else {
+                        let streakRes = userSnap.data().streak
+                        if (streakRes > Number(localStorage.getItem("streak"))) {
+                            localStorage.setItem("streak", streakRes)
+                            setStreak(streakRes)
+                        } else {
+                            const userRef = doc(db, "users", user.uid)
+                            updateDoc(userRef, {
+                                streak: Number(localStorage.getItem("streak")),
+                            });
+                        }
+                    }
+                }
+                setLoading(false)
+            }
+            fetchData();
+            localStorage.setItem("last_userinfo_fetch", todayDate)
+        }
         randomIndex = Math.floor(Math.random() * benefitsData.benefits_of_dhikr.length);
+        setLoading(false)
     }, [])
-
-    useEffect(() => {
-        if (userinfo) {
-            setCoins(userinfo.coins)
-            setStreak(userinfo.streak)
-        }
-        if (adhkarinfo) {
-            setDailyAdhkar(adhkarinfo)
-        }
-    }, [userinfo, adhkarinfo])
 
     const toggleExpand = () => {
         setBenefitsCardExpanded(!benefitsCardExpanded);
@@ -62,11 +105,14 @@ function Home() {
     return (
         <Stack display={"flex"} alignItems={"center"} maxHeight={"80vh"} paddingBottom={"60px"} overflow="auto">
             <TopBar />
-            <HStack gap={"20px"} width={"80vw"} maxWidth={"300px"} display={"flex"} justifyContent={"flex-end"}>
-                <HStack><GiTwoCoins />
+            <HStack gap={"20px"} width={"80vw"} maxWidth={"300px"} marginTop={4} display={"flex"} justifyContent={"flex-end"}>
+                <HStack gap={"2px"}>
+                    <GiTwoCoins />
                     <Text>{coins}</Text>
                 </HStack>
-                <HStack><RiFireFill /><Text>{streak} days</Text>
+                <HStack gap={"2px"}>
+                    <RiFireFill />
+                    <Text>{streak} days</Text>
                 </HStack>
             </HStack>
 
@@ -74,21 +120,20 @@ function Home() {
                 <Text fontSize="lg" fontWeight="bold">Daily Istighfar:</Text>
                 <HStack>
                     <Button size={"xs"} onClick={() => navigate('/adddhikr')}><><BiAddToQueue />Add</></Button>
-
-                    {/* <Button size={"xs"}
-                    colorPalette={"red"}
-                    onClick={() => {
-                        localStorage.clear()
-                        setDailyAdhkar({})
-                    }
-                    }>Clear</Button> */}
+                    <Button size={"xs"}
+                        colorPalette={"red"}
+                        onClick={() => {
+                            localStorage.clear()
+                            setDailyAdhkar({})
+                        }
+                        }>Clear</Button>
                 </HStack>
             </HStack>
 
             {Object.keys(dailyAdhkar).length < 1 &&
                 <Stack>
                     <Text>Please add Istighfar to recite everyday</Text>
-                    <Button onClick={() => navigate('/adddhikr')}><BiAddToQueue />Add Istighfar</Button>
+                    <Button onClick={() => navigate('/adddhikr')}><BiAddToQueue /> Add Istighfar</Button>
                 </Stack>}
 
             {Object.keys(dailyAdhkar).length > 0 && Object.keys(dailyAdhkar).map((key) => (
@@ -109,17 +154,11 @@ function Home() {
                                     <Button
                                         size={"xs"}
                                         onClick={() => {
-                                            const adhkarRef = doc(db, "daily_adhkar", user.uid)
-                                            setAdhkarinfo(prev => {
-                                                const updatedAdhkar = [...prev];
-                                                const index = updatedAdhkar.findIndex(item => item.id === prev[key].id);
-                                                if (index !== -1) {
-                                                    updatedAdhkar[index] = { ...updatedAdhkar[index], repetition: updatedAdhkar[index].repetition + 10 };
-                                                }
-                                                return updatedAdhkar;
-                                            })
-                                            adhkarinfo[key].repetition += 10
-                                            updateDoc(adhkarRef, { daily_adhkar: adhkarinfo })
+                                            let dailyAdhkarString = localStorage.getItem("daily_adhkar");
+                                            let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
+                                            dailyAdhkarObj[key].repetition = dailyAdhkarObj[key].repetition + 10
+                                            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
+                                            setDailyAdhkar(dailyAdhkarObj)
                                         }}
                                     >
                                         <LuChevronsUp /> 10
@@ -128,17 +167,11 @@ function Home() {
                                     <Button
                                         size={"xs"}
                                         onClick={() => {
-                                            const adhkarRef = doc(db, "daily_adhkar", user.uid)
-                                            setAdhkarinfo(prev => {
-                                                const updatedAdhkar = [...prev];
-                                                const index = updatedAdhkar.findIndex(item => item.id === prev[key].id);
-                                                if (index !== -1) {
-                                                    updatedAdhkar[index] = { ...updatedAdhkar[index], repetition: updatedAdhkar[index].repetition + 1 };
-                                                }
-                                                return updatedAdhkar;
-                                            })
-                                            adhkarinfo[key].repetition += 1
-                                            updateDoc(adhkarRef, { daily_adhkar: adhkarinfo })
+                                            let dailyAdhkarString = localStorage.getItem("daily_adhkar");
+                                            let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
+                                            dailyAdhkarObj[key].repetition = dailyAdhkarObj[key].repetition + 1
+                                            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
+                                            setDailyAdhkar(dailyAdhkarObj)
                                         }}
                                     >
                                         <LuChevronUp />
@@ -147,19 +180,11 @@ function Home() {
                                     <Button
                                         size={"xs"}
                                         onClick={() => {
-                                            const adhkarRef = doc(db, "daily_adhkar", user.uid)
-                                            setAdhkarinfo(prev => {
-                                                const updatedAdhkar = [...prev];
-                                                const index = updatedAdhkar.findIndex(item => item.id === prev[key].id);
-                                                if (index !== -1 && updatedAdhkar[index].repetition > 1) {
-                                                    updatedAdhkar[index] = { ...updatedAdhkar[index], repetition: updatedAdhkar[index].repetition - 1 };
-                                                }
-                                                return updatedAdhkar;
-                                            })
-                                            if (adhkarinfo[key].repetition > 1) {
-                                                adhkarinfo[key].repetition -= 1
-                                                updateDoc(adhkarRef, { daily_adhkar: adhkarinfo })
-                                            }
+                                            let dailyAdhkarString = localStorage.getItem("daily_adhkar");
+                                            let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
+                                            dailyAdhkarObj[key].repetition = dailyAdhkarObj[key].repetition - 1
+                                            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
+                                            setDailyAdhkar(dailyAdhkarObj)
                                         }}
                                     >
                                         <LuChevronDown />
@@ -168,27 +193,17 @@ function Home() {
                                     <Button
                                         size={"xs"}
                                         onClick={() => {
-                                            const adhkarRef = doc(db, "daily_adhkar", user.uid)
-                                            setAdhkarinfo(prev => {
-                                                const updatedAdhkar = [...prev];
-                                                const index = updatedAdhkar.findIndex(item => item.id === prev[key].id);
-                                                if (index !== -1) {
-                                                    updatedAdhkar.splice(index, 1);
-                                                }
-                                                return updatedAdhkar;
-                                            })
-
-                                            const index = adhkarinfo.indexOf(adhkarinfo[key]);
-                                            if (index > -1) {
-                                                adhkarinfo.splice(index, 1);
-                                            }
-                                            updateDoc(adhkarRef, { daily_adhkar: adhkarinfo })
+                                            let dailyAdhkarString = localStorage.getItem("daily_adhkar");
+                                            let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
+                                            delete dailyAdhkarObj[key]
+                                            localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
+                                            setDailyAdhkar(dailyAdhkarObj)
                                         }}
                                     ><LuX />
                                     </Button>
-
                                 </HStack>
                             </VStack>
+
                         </CheckboxCard.Content>
                     </CheckboxCard.Control>
                 </CheckboxCard.Root>
@@ -220,14 +235,14 @@ function Home() {
                     <Button
                         size={"xl"}
                         onClick={() => navigate('/dailydhikr')}
-                        backgroundColor='#FFD700' 
+                        backgroundColor='#FFD700'
                         color='black'
-                        boxShadow='0px 12px 0px 0px #cfaf06' 
+                        boxShadow='0px 12px 0px 0px #cfaf06'
                         fontWeight='bold'
                         _active={{
                             backgroundColor: 'white',
                             boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff',
-                            transform: 'translateY(4px)' 
+                            transform: 'translateY(4px)'
                         }}
                         _hover={{ backgroundColor: 'white', boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff' }}
                     >
@@ -236,9 +251,8 @@ function Home() {
                     </Button>
                 </Box>
             }
-
         </Stack>
     )
 }
 
-export default Home
+export default HomeTab

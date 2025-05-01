@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { Text, Tag, VStack, Accordion, Button, Stack, HStack } from '@chakra-ui/react'
-import { auth, db } from '../firebase';
-import { doc, setDoc, arrayUnion } from "firebase/firestore";
 import { Toaster, toaster } from "../components/ui/toaster"
 import TopBar from "../components/TopBar"
 
@@ -20,8 +18,6 @@ function AddDhikr() {
     const [selectedType, setSeletedType] = useState("short")
     const [value, setValue] = useState("")
     const [loading, setLoading] = useState(true)
-
-    const user = auth.currentUser;
 
     useEffect(() => {
         filtered_adhkar = adhkarData.adhkar.filter(obj => obj.type == selectedType)
@@ -57,7 +53,7 @@ function AddDhikr() {
                     <HStack>
                         <Text>Press </Text>
 
-                        <Text backgroundColor='#87e307' // Initial gold color
+                        <Text backgroundColor='#87e307'
                             color='black'
                             boxShadow='0px 6px 0px 0px #71ba0b'
                             width="20px"
@@ -79,18 +75,9 @@ function AddDhikr() {
                                 </Accordion.ItemTrigger>
 
                                 <Button onClick={() => {
-                                    if (user) {
-                                        const userRef = doc(db, "daily_adhkar", user.uid);
-                                        setDoc(userRef, { daily_adhkar: arrayUnion(item) }, { merge: true });
-                                    } else {
-                                        let dailyAdhkarString = localStorage.getItem("daily_adhkar");
-                                        
+                                        let dailyAdhkarString = localStorage.getItem("daily_adhkar");                                        
                                         let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
-                                        console.log(localStorage, dailyAdhkarString, dailyAdhkarObj)
-
                                         localStorage.setItem("last_repeat_date", "");
-
-
 
                                         dailyAdhkarObj[item.id] = {
                                             type: item.type,
@@ -103,11 +90,6 @@ function AddDhikr() {
                                         };
                                         localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
 
-
-                                      
-
-                                    }
-
                                     toaster.create({
                                         description: "Dhikr Added!",
                                         type: "success",
@@ -115,20 +97,19 @@ function AddDhikr() {
                                     })
                                 }}
                                     size="xs"
-                                    backgroundColor='#87e307' // Initial gold color
+                                    backgroundColor='#87e307'
                                     color='black'
                                     boxShadow='0px 6px 0px 0px #71ba0b'
 
                                     _active={{
                                         backgroundColor: 'white',
                                         boxShadow: '0px 2px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff',
-                                        transform: 'translateY(4px)' //Keeps the button visually pressed down on click
+                                        transform: 'translateY(4px)'
                                     }}
                                     _hover={{ backgroundColor: 'white', boxShadow: '0px 2px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff' }}
                                 >
                                     <Text color="black" fontSize="24px" fontWeight='800'>+</Text>
                                 </Button>
-
                             </HStack>
 
                             <Accordion.ItemContent>

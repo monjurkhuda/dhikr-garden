@@ -17,8 +17,8 @@ const NavBar = () => {
   const linkStyle = (path) => {
     return {
       backgroundColor: activeLink === path ? 'gray' : 'transparent',
-      padding: '8px', // Added padding for better visual appearance
-      borderRadius: '4px', // Added border radius for rounded corners
+      padding: '8px',
+      borderRadius: '4px',
     };
   };
 

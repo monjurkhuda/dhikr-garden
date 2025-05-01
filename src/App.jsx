@@ -1,17 +1,16 @@
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
-import Home from './pages/Home'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import HomePublic from './pages/HomePublic'
+import HomeTab from './pages/HomeTab'
+import Home from './pages/Home'
 import NavBar from './components/NavBar'
-import Account from './pages/Account'
 import DailyDhikr from './pages/DailyDhikr'
 import Cards from './pages/Cards'
-import Rank from './pages/Rank'
 import { Provider } from "./components/ui/provider"
-import { auth } from './firebase'
 import AddDhikr from './pages/AddDhikr'
+import Account from './pages/Account'
+import Rank from "./pages/Rank"
 import { useState, useEffect } from 'react'
-import { FaTruckLoading } from "react-icons/fa";
-import TopBar from './components/TopBar'
+import { auth } from './firebase'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -33,7 +32,7 @@ function App() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <FaTruckLoading />
+        Loading...
       </div>
     )
   }
@@ -45,14 +44,22 @@ function App() {
 
           <Route
             path="/"
-            element={user ? <Home /> : <HomePublic />}
+            element={user ? <HomeTab /> : <HomePublic />}
           />
+
+          {/* <Route
+            path="/home"
+            element={<Home />}
+          /> */}
 
           <Route path='/dailydhikr' element={<DailyDhikr />} />
 
-          <Route path='/account' element={<Account />} />
-
           <Route path='/adddhikr' element={<AddDhikr />} />
+
+          <Route
+            path="/cards"
+            element={user ? <Cards /> : <Account />}
+          />
 
           <Route
             path="/rank"
@@ -62,6 +69,10 @@ function App() {
           <Route
             path="/cards"
             element={user ? <Cards /> : <Account />}
+          />
+
+          <Route
+            path="/account" element={<Account />}
           />
 
         </Routes>
