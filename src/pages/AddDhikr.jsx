@@ -13,6 +13,7 @@ adhkarData.adhkar.forEach(adhkar => {
     }
 })
 
+console.log(localStorage)
 
 function AddDhikr() {
     const [selectedType, setSeletedType] = useState("short")
@@ -79,7 +80,7 @@ function AddDhikr() {
                                         let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
                                         localStorage.setItem("last_repeat_date", "");
 
-                                        dailyAdhkarObj[item.id] = {
+                                        dailyAdhkarObj[item.translation] = {
                                             type: item.type,
                                             arabic: item.arabic,
                                             translation: item.translation,
@@ -88,6 +89,7 @@ function AddDhikr() {
                                             repetition: 1,
                                             repeated_today: 0
                                         };
+
                                         localStorage.setItem('daily_adhkar', JSON.stringify(dailyAdhkarObj));
 
                                     toaster.create({

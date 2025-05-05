@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom'
-import { Box, VStack, Text, Button, Flex, Card, CheckboxCard, Stack, HStack } from '@chakra-ui/react'
-import { LuChevronDown, LuChevronUp, LuChevronsUp, LuX } from "react-icons/lu";
+import { Box, Input, VStack, Text, Button, Flex, Card, CheckboxCard, Stack, HStack } from '@chakra-ui/react'
+import { LuChevronDown, LuChevronUp, LuChevronsUp, LuX, LuSave } from "react-icons/lu";
 import { BiAddToQueue } from "react-icons/bi";
 import { RiFireFill } from "react-icons/ri";
 import { BsFillPlayFill } from "react-icons/bs";
@@ -24,6 +24,8 @@ function HomeTab() {
     const [coins, setCoins] = useState(Number(localStorage.getItem("coins")) || 0);
     const [streak, setStreak] = useState(Number(localStorage.getItem("streak")) || 0);
     const [dailyAdhkar, setDailyAdhkar] = useState(JSON.parse(localStorage.getItem("daily_adhkar")) || {});
+    const [goal, setGoal] = useState(localStorage.getItem("goal") || "");
+    const [showGoalEdit, setShowGoalEdit] = useState(false);
 
     //localStorage.setItem("last_userinfo_fetch", "4/20/2025")
 
@@ -116,17 +118,46 @@ function HomeTab() {
                 </HStack>
             </HStack>
 
+            <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+                {showGoalEdit &&
+                    <HStack marginBottom={"10px"}>
+                        <Input
+                            size="xs"
+                            maxLength={30}
+                            onInput={(e) => {
+                                if (e.target.value.length > 30)
+                                    e.target.value = e.target.value.slice(0, 30);
+                            }}
+                            type="text" placeholder="Enter your goal" value={goal} onChange={(e) => setGoal(e.target.value)} />
+                        <Button
+                            size="xs"
+                            onClick={() => {
+                                localStorage.setItem("goal", goal)
+                                setShowGoalEdit(!showGoalEdit)
+                            }}>
+                            <LuSave />
+                        </Button>
+                    </HStack>
+                }
+
+                {!showGoalEdit &&
+                    <HStack maxWidth={"320px"} marginBottom={"10px"}>
+                        <Text onClick={() => { setShowGoalEdit(!showGoalEdit) }} lineClamp={2} fontSize="14px">Goal: {localStorage.getItem("goal") || "Click to set goal"}</Text>
+                    </HStack>
+                }
+            </Box>
+
             <HStack width={"80vw"} maxWidth={"300px"} justifyContent={"space-between"}>
                 <Text fontSize="lg" fontWeight="bold">Daily Istighfar:</Text>
                 <HStack>
                     <Button size={"xs"} onClick={() => navigate('/adddhikr')}><><BiAddToQueue />Add</></Button>
-                    <Button size={"xs"}
+                    {/* <Button size={"xs"}
                         colorPalette={"red"}
                         onClick={() => {
                             localStorage.clear()
                             setDailyAdhkar({})
                         }
-                        }>Clear</Button>
+                        }>Clear</Button> */}
                 </HStack>
             </HStack>
 

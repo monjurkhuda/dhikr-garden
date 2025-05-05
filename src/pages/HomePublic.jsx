@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom'
-import { Box, VStack, Text, Button, Flex, Card, CheckboxCard, Stack, HStack } from '@chakra-ui/react'
-import { LuChevronDown, LuChevronUp, LuChevronsUp, LuX } from "react-icons/lu";
+import { Box, VStack, Text, Button, Flex, Card, CheckboxCard, Stack, HStack, Input } from '@chakra-ui/react'
+import { LuChevronDown, LuChevronUp, LuChevronsUp, LuX, LuSave } from "react-icons/lu";
 import { BiAddToQueue } from "react-icons/bi";
 import { GiTwoCoins } from "react-icons/gi";
 import { BsFillPlayFill } from "react-icons/bs";
-import { RiFireFill } from "react-icons/ri";
+import { RiFireFill, RiEditLine } from "react-icons/ri";
 import TopBar from "../components/TopBar"
 import benefitsData from "../assets/data/benefits_of_dhikr.json";
 
@@ -14,6 +14,8 @@ function HomePublic() {
     const [dailyAdhkar, setDailyAdhkar] = useState(JSON.parse(localStorage.getItem("daily_adhkar")) || {});
     const [coins, setCoins] = useState(localStorage.getItem("coins") || 0);
     const [streak, setStreak] = useState(localStorage.getItem("streak") || 0);
+    const [goal, setGoal] = useState(localStorage.getItem("goal") || "");
+    const [showGoalEdit, setShowGoalEdit] = useState(false);
 
     const navigate = useNavigate();
     let randomIndex = Math.floor(Math.random() * benefitsData.benefits_of_dhikr.length);
@@ -26,13 +28,16 @@ function HomePublic() {
             let dailyAdhkarString = localStorage.getItem("daily_adhkar");
             let dailyAdhkarObj = JSON.parse(dailyAdhkarString);
             setDailyAdhkar(dailyAdhkarObj)
-        }        
+        }
         randomIndex = Math.floor(Math.random() * benefitsData.benefits_of_dhikr.length);
     }, [])
 
     useEffect(() => {
         localStorage.setItem("coins", coins)
     }, [coins])
+
+    useEffect(() => {
+    }, [goal])
 
     const toggleExpand = () => {
         setBenefitsCardExpanded(!benefitsCardExpanded);
@@ -48,17 +53,47 @@ function HomePublic() {
                 </HStack>
             </HStack>
 
+            <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+                {showGoalEdit &&
+                    <HStack marginBottom={"10px"}>
+                        <Input
+                            size="xs"
+                            maxLength={30}
+                            onInput={(e) => {
+                                if (e.target.value.length > 30)
+                                    e.target.value = e.target.value.slice(0, 30);
+                            }}
+                            type="text" placeholder="Enter your goal" value={goal} onChange={(e) => setGoal(e.target.value)} />
+                        <Button
+                            size="xs"
+                            onClick={() => {
+                                localStorage.setItem("goal", goal)
+                                setShowGoalEdit(!showGoalEdit)
+                            }}>
+                            <LuSave />
+                        </Button>
+                    </HStack>
+                }
+
+                {!showGoalEdit &&
+                    <HStack maxWidth={"320px"} marginBottom={"10px"}>
+                        <Text onClick={() => { setShowGoalEdit(!showGoalEdit) }} lineClamp={2} fontSize="14px">Goal: {localStorage.getItem("goal") || "Click to set goal"}</Text>
+                    </HStack>
+                }
+            </Box>
+
+
             <HStack width={"80vw"} maxWidth={"300px"} justifyContent={"space-between"}>
                 <Text fontSize="lg" fontWeight="bold">Daily Istighfar:</Text>
                 <HStack>
                     <Button size={"xs"} onClick={() => navigate('/adddhikr')}><><BiAddToQueue />Add</></Button>
-                    <Button size={"xs"}
+                    {/* <Button size={"xs"}
                         colorPalette={"red"}
                         onClick={() => {
                             localStorage.clear()
                             setDailyAdhkar({})
                         }
-                        }>Clear</Button>
+                        }>Clear</Button> */}
                 </HStack>
             </HStack>
 
@@ -167,14 +202,14 @@ function HomePublic() {
                     <Button
                         size={"xl"}
                         onClick={() => navigate('/dailydhikr')}
-                        backgroundColor='#FFD700'  
+                        backgroundColor='#FFD700'
                         color='black'
-                        boxShadow='0px 12px 0px 0px #cfaf06' 
+                        boxShadow='0px 12px 0px 0px #cfaf06'
                         fontWeight='bold'
                         _active={{
                             backgroundColor: 'white',
                             boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff',
-                            transform: 'translateY(4px)' 
+                            transform: 'translateY(4px)'
                         }}
                         _hover={{ backgroundColor: 'white', boxShadow: '0px 8px 0px 0px lightgray, 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px #fff, 0 0 30px #fff' }}
                     >
