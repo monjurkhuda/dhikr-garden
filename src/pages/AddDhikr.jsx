@@ -13,8 +13,6 @@ adhkarData.adhkar.forEach(adhkar => {
     }
 })
 
-console.log(localStorage)
-
 function AddDhikr() {
     const [selectedType, setSeletedType] = useState("short")
     const [value, setValue] = useState("")

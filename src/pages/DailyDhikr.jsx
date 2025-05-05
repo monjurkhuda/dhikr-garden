@@ -41,8 +41,6 @@ const DailyDhikr = () => {
         }
     })
 
-    console.log(dailyAdhkarIdArray)
-
     const handlePlay = () => {
         if (isSoundOn) {
             play();

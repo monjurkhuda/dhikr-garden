@@ -65,7 +65,7 @@ const Cards = () => {
     }, [])
 
     useEffect(() => {
-        let userCardsObj = JSON.parse(localStorage.getItem("user_cards"));        
+        let userCardsObj = JSON.parse(localStorage.getItem("user_cards"));
 
         if (Object.keys(wonCard).length > 0) {
             userCardsObj.push(wonCard.id);
@@ -130,6 +130,12 @@ const Cards = () => {
         setCoins(coins - coinreq)
         setCountdownInProgress(true);
 
+        const userRef = doc(db, "users", user.uid);
+        let user_coins = Number(coins - coinreq)
+        await updateDoc(userRef, {
+            coins: user_coins
+        })
+
         if (tier == "bronze") {
             let silver_probability = 5
             let gold_probability = 2
@@ -185,7 +191,7 @@ const Cards = () => {
         <VStack maxHeight={"80vh"} overflow="auto">
             <TopBar />
             <Toaster />
-            <HStack gap={"20px"} width={"260px"} maxWidth={"260px"} marginTop={4} overflow="auto"  wrap={"wrap"}>
+            <HStack gap={"20px"} width={"260px"} maxWidth={"260px"} marginTop={4} overflow="auto" wrap={"wrap"}>
 
                 {userCards && !countdownInProgress && Object.keys(userCards).map(idx =>
                     <Box width='60px' height='60px' marginTop="10px" marginBottom="10px">
@@ -301,7 +307,7 @@ const Cards = () => {
                         </Dialog.Root>))}
                 </HStack>
             </Box>
-        </VStack>  
+        </VStack>
     );
 };
 
